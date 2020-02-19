@@ -1,10 +1,21 @@
 {
-    "name": "ONEBIOT Framework",
-    "keywords": "arduino, framework, wifi, manager",
-    "authors": {
-      "name": "Tomáš Lebeda",
-      "url": "https://prevedshop.cz/"
-    },
-    "frameworks": "arduino",
-    "platforms": "*"
-  }
+  "name": "ONE Box of IOT Framework",
+  "description": "ONEBIOT is framework for creating base connection and behaviors settings for any app",
+  "keywords": "arduino, framework, wifi, manager, esp32, esp8266",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/1biot/esp-arduino.git"
+  },
+  "dependencies":
+  {
+    "ArduinoJson": "bblanchon/ArduinoJson"
+  },
+  "authors": {
+    "name": "Tomáš Lebeda",
+    "email": "lebeda@prevedshop.cz",
+    "maintainer": true
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}

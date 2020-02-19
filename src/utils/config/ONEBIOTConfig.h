@@ -20,6 +20,7 @@ struct ONEBIOTConfigAppConfig {
 class ONEBIOTConfig {
     public:
         ONEBIOTConfig(ONEBIOTConfigAppConfig &config, String configFile);
+        ONEBIOTConfig(ONEBIOTConfigAppConfig &config, const char *configFile);
         ONEBIOTConfig(ONEBIOTConfigAppConfig &config);
         ONEBIOTConfigAppConfig getConfig();
         String getClientName();
@@ -47,8 +48,8 @@ class ONEBIOTConfig {
         bool load();
         void save();
     protected:
-        void configToJson(JsonObject& root);
-        void jsonToConfig(JsonObject& root);
+        void configToJson(JsonDocument& root);
+        void jsonToConfig(JsonDocument& root);
     private:
         ONEBIOTConfigAppConfig &_config;
         String _configFile;

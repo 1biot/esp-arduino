@@ -62,8 +62,7 @@ bool ONEBIOTCmdRequestHandler::handle(ESP8266WebServer& server, HTTPMethod reque
 
     bool needRestart = false;
     __payload = String("");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& response = jsonBuffer.createObject();
+    DynamicJsonDocument response(4096);
 
     if (requestUri == CMD_WIFI_LIST && requestMethod == HTTP_GET) {
         CMD_WIFI_LIST_CALLBACK(response, server, requestMethod);
@@ -90,7 +89,7 @@ bool ONEBIOTCmdRequestHandler::handle(ESP8266WebServer& server, HTTPMethod reque
 
     if (response.size()) {
         server.sendHeader("Access-Control-Allow-Origin", "*");
-        response.printTo(__payload);
+        serializeJson(response, __payload);
         server.send(200, "application/json", __payload);    
         if (needRestart) {
             onNeedRestart();
@@ -101,13 +100,13 @@ bool ONEBIOTCmdRequestHandler::handle(ESP8266WebServer& server, HTTPMethod reque
     return false;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_RESET_CALLBACK(JsonObject& response) {
+bool ONEBIOTCmdRequestHandler::CMD_RESET_CALLBACK(JsonDocument& response) {
     response["success"] = true;
     response["message"] = "Device restarting";
     return true;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_CREDENTIALS_CALLBACK(JsonObject& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
+bool ONEBIOTCmdRequestHandler::CMD_CREDENTIALS_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
     if (requestMethod != HTTP_POST) {
         response["success"] = false;
         response["message"] = "Invalid request.";
@@ -127,7 +126,7 @@ bool ONEBIOTCmdRequestHandler::CMD_CREDENTIALS_CALLBACK(JsonObject& response, ES
     return true;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_WIFI_LIST_CALLBACK(JsonObject& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
+bool ONEBIOTCmdRequestHandler::CMD_WIFI_LIST_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
     if (requestMethod == HTTP_GET) {
         int scanCount = WiFi.scanNetworks();
         if (scanCount == WIFI_SCAN_RUNNING) {
@@ -139,9 +138,9 @@ bool ONEBIOTCmdRequestHandler::CMD_WIFI_LIST_CALLBACK(JsonObject& response, ESP8
         } else if (scanCount) {
             response["success"] = true;
 
-            JsonArray &data = response.createNestedArray("data");
-            for (int i = 0; i < scanCount; ++i) {
-                JsonObject& network = data.createNestedObject();
+            JsonArray data = response.createNestedArray("data");
+            for (int i = 0; i < 5; ++i) { // max 5 wifis :-)
+                JsonObject network = data.createNestedObject();
                 network["ssid"] = WiFi.SSID(i);
                 network["encryption"] = WiFi.encryptionType(i);
                 network["rssi"] = WiFi.RSSI(i);
@@ -163,11 +162,11 @@ bool ONEBIOTCmdRequestHandler::CMD_WIFI_LIST_CALLBACK(JsonObject& response, ESP8
     return false;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_WIFI_CALLBACK(JsonObject& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
+bool ONEBIOTCmdRequestHandler::CMD_WIFI_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
     if (requestMethod == HTTP_GET) {
         if (WiFi.status() == WL_CONNECTED) {
             response["success"] = true;
-            JsonObject &data = response.createNestedObject("data");
+            JsonObject data = response.createNestedObject("data");
             data["ssid"] = WiFi.SSID();
             data["rssi"] = WiFi.RSSI();
             data["bssid"] = WiFi.BSSIDstr();
@@ -198,11 +197,11 @@ bool ONEBIOTCmdRequestHandler::CMD_WIFI_CALLBACK(JsonObject& response, ESP8266We
     return false;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_AP_CALLBACK(JsonObject& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
+bool ONEBIOTCmdRequestHandler::CMD_AP_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
     if (requestMethod == HTTP_GET) {
         if (WiFi.getMode() == WIFI_AP_STA) {
             response["success"] = true;
-            JsonObject &data = response.createNestedObject("data");
+            JsonObject data = response.createNestedObject("data");
             data["ssid"] = WiFi.softAPSSID();
             data["psk"] = WiFi.softAPPSK();
             data["ip"] = WiFi.softAPIP().toString();
@@ -230,13 +229,13 @@ bool ONEBIOTCmdRequestHandler::CMD_AP_CALLBACK(JsonObject& response, ESP8266WebS
     return false;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_STATS_CALLBACK(JsonObject& response) {
+bool ONEBIOTCmdRequestHandler::CMD_STATS_CALLBACK(JsonDocument& response) {
     response["success"] = true;
     
     FSInfo fs_info;
     SPIFFS.info(fs_info);
 
-    JsonObject& data = response.createNestedObject("data");
+    JsonObject data = response.createNestedObject("data");
     data["spiffs_total_bytes"] = fs_info.totalBytes;
     data["spiffs_used_bytes"] = fs_info.usedBytes;
     data["spiffs_block_size"] = fs_info.blockSize;
@@ -261,10 +260,10 @@ bool ONEBIOTCmdRequestHandler::CMD_STATS_CALLBACK(JsonObject& response) {
     return true;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_STATS_ESP_CALLBACK(JsonObject& response) {
+bool ONEBIOTCmdRequestHandler::CMD_STATS_ESP_CALLBACK(JsonDocument& response) {
     response["success"] = true;
 
-    JsonObject& data = response.createNestedObject("data");
+    JsonObject data = response.createNestedObject("data");
     data["esp_free_heap"] = ESP.getFreeHeap();
     data["esp_heap_fragmentation"] = ESP.getHeapFragmentation();
     data["esp_max_free_block_size"] = ESP.getMaxFreeBlockSize();
@@ -282,13 +281,13 @@ bool ONEBIOTCmdRequestHandler::CMD_STATS_ESP_CALLBACK(JsonObject& response) {
     return true;
 }
 
-bool ONEBIOTCmdRequestHandler::CMD_STATS_SPIFFS_CALLBACK(JsonObject& response) {
+bool ONEBIOTCmdRequestHandler::CMD_STATS_SPIFFS_CALLBACK(JsonDocument& response) {
     response["success"] = true;
 
     FSInfo fs_info;
     SPIFFS.info(fs_info);
     
-    JsonObject& data = response.createNestedObject("data");
+    JsonObject data = response.createNestedObject("data");
     data["spiffs_total_bytes"] = fs_info.totalBytes;
     data["spiffs_used_bytes"] = fs_info.usedBytes;
     data["spiffs_block_size"] = fs_info.blockSize;
@@ -298,45 +297,45 @@ bool ONEBIOTCmdRequestHandler::CMD_STATS_SPIFFS_CALLBACK(JsonObject& response) {
 
     return true;
 }
-bool ONEBIOTCmdRequestHandler::CMD_OPTION_CALLBACK(JsonObject& response) {
+bool ONEBIOTCmdRequestHandler::CMD_OPTION_CALLBACK(JsonDocument& response) {
     if (_optionParam == "client_name") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = _config.getClientName();
     } else if (_optionParam == "credentials_user") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = SECURE_VALUE;
     } else if (_optionParam == "credentials_password") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = SECURE_VALUE;
     } else if (_optionParam == "ap_ssid") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = _config.getConfig().ap_ssid;
     } else if (_optionParam == "ap_password") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = SECURE_VALUE;
     } else if (_optionParam == "wifi_ssid") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = _config.getConfig().wifi_ssid;
     } else if (_optionParam == "wifi_password") {
         response["success"] = true;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = SECURE_VALUE;
     } else {
         response["success"] = false;
-        JsonObject &data = response.createNestedObject("data");
+        JsonObject data = response.createNestedObject("data");
         data["name"] = _optionParam;
         data["value"] = UNKNOWN_VALUE;
     }

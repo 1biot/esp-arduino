@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <FS.h>
 #include <time.h>
-#include <ArduinoJson.h>
 
 #ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>

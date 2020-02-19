@@ -18,6 +18,7 @@ const char *ONEBIOT_DEFAULT_WS_NAME = "onebiot";
 const int JSON_SETTINGS_BUFFER_SIZE = 512;
 
 ONEBIOTConfig::ONEBIOTConfig(ONEBIOTConfigAppConfig &config, String configFile) : _config(config), _configFile(configFile) {}
+ONEBIOTConfig::ONEBIOTConfig(ONEBIOTConfigAppConfig &config, const char *configFile) : _config(config), _configFile(String(configFile)) {}
 ONEBIOTConfig::ONEBIOTConfig(ONEBIOTConfigAppConfig &config) : _config(config), _configFile("") {}
 
 ONEBIOTConfigAppConfig ONEBIOTConfig::getConfig() {
@@ -157,14 +158,13 @@ bool ONEBIOTConfig::load() {
     if (!configFile) {
         return false;
     }
-
-    size_t size = configFile.size();
-
-    std::unique_ptr<char[]> buf (new char[size]);
-    configFile.readBytes(buf.get(), size);
     
-    StaticJsonBuffer<JSON_SETTINGS_BUFFER_SIZE> jsonBuffer;
-    JsonObject& doc = jsonBuffer.parseObject(buf.get());
+    StaticJsonDocument<JSON_SETTINGS_BUFFER_SIZE> doc;
+    DeserializationError error = deserializeJson(doc, configFile);
+    Serial.println(error.c_str());
+    if (error) {
+        return false;
+    }
     jsonToConfig(doc);
 
     configFile.close();
@@ -172,8 +172,7 @@ bool ONEBIOTConfig::load() {
 }
 
 void ONEBIOTConfig::save() {
-    StaticJsonBuffer<JSON_SETTINGS_BUFFER_SIZE> jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    StaticJsonDocument<JSON_SETTINGS_BUFFER_SIZE> root;
     configToJson(root);
     
     if (SPIFFS.exists(_configFile)) {
@@ -181,15 +180,17 @@ void ONEBIOTConfig::save() {
     }
 
     File configFile = SPIFFS.open(_configFile, "w");
-    root.printTo(configFile);
-    configFile.close();
+    if (serializeJson(root, configFile) == 0) {
+        return;
+    }
 
+    configFile.close();
     if (SPIFFS.exists(_configFile + ".bak")) {
         SPIFFS.remove(_configFile + ".bak");
     }
 }
 
-void ONEBIOTConfig::configToJson(JsonObject& root) {
+void ONEBIOTConfig::configToJson(JsonDocument& root) {
     if (!_config.credentials_user.isEmpty()) {
         root["credentials_user"] = _config.credentials_user;
     }
@@ -216,7 +217,7 @@ void ONEBIOTConfig::configToJson(JsonObject& root) {
     root["dns_establish"] = _config.dns_establish ? 1 : 0;
 }
 
-void ONEBIOTConfig::jsonToConfig(JsonObject& root) {
+void ONEBIOTConfig::jsonToConfig(JsonDocument& root) {
     _config.credentials_user = root["credentials_user"] | "";
     _config.credentials_password = root["credentials_password"] | "";
     _config.client_name = root["client_name"] | "";
