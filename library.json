@@ -1,0 +1,10 @@
+{
+    "name": "ONEBIOT Framework",
+    "keywords": "arduino, framework, wifi, manager",
+    "authors": {
+      "name": "Tomáš Lebeda",
+      "url": "https://prevedshop.cz/"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+  }

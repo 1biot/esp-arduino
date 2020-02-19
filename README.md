@@ -1,2 +1,2 @@
-# esp-arduino
-Framework for easy using the your ESP8266 and ESP32 at Arduino framework
+# ONEBIOT Framework v.1.0
+Information about our awesome and useful framework
