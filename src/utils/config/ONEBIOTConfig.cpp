@@ -161,12 +161,11 @@ bool ONEBIOTConfig::load() {
     
     StaticJsonDocument<JSON_SETTINGS_BUFFER_SIZE> doc;
     DeserializationError error = deserializeJson(doc, configFile);
-    Serial.println(error.c_str());
     if (error) {
         return false;
     }
-    jsonToConfig(doc);
 
+    jsonToConfig(doc);
     configFile.close();
     return true;
 }

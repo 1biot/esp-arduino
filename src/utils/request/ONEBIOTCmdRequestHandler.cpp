@@ -62,7 +62,7 @@ bool ONEBIOTCmdRequestHandler::handle(ESP8266WebServer& server, HTTPMethod reque
 
     bool needRestart = false;
     __payload = String("");
-    DynamicJsonDocument response(4096);
+    DynamicJsonDocument response(2048);
 
     if (requestUri == CMD_WIFI_LIST && requestMethod == HTTP_GET) {
         CMD_WIFI_LIST_CALLBACK(response, server, requestMethod);
@@ -82,7 +82,7 @@ bool ONEBIOTCmdRequestHandler::handle(ESP8266WebServer& server, HTTPMethod reque
     } else if (requestUri == CMD_AP && (requestMethod == HTTP_GET || requestMethod == HTTP_POST)) {
         CMD_AP_CALLBACK(response, server, requestMethod);
     } else if (requestUri == CMD_DNS && (requestMethod == HTTP_GET || requestMethod == HTTP_POST)) {
-        // will be
+        CMD_DNS_CALLBACK(response, server, requestMethod);
     } else if (requestUri.indexOf("/cmd/option/") == 0 && (requestMethod == HTTP_GET)) {
         CMD_OPTION_CALLBACK(response);
     }
@@ -224,6 +224,29 @@ bool ONEBIOTCmdRequestHandler::CMD_AP_CALLBACK(JsonDocument& response, ESP8266We
 
         response["success"] = true;
         response["message"] = "AP settings saved. Please restart the ESP.";
+        return true;
+    }
+    return false;
+}
+
+bool ONEBIOTCmdRequestHandler::CMD_DNS_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod) {
+    if (requestMethod == HTTP_GET) {
+        response["success"] = true;
+        JsonObject data = response.createNestedObject("data");
+        data["name"] = _config.getDnsName();
+        data["local_name"] = _config.getDnsName() + String(".local");
+        return true;
+    } else if (requestMethod == HTTP_POST) {
+        if (server.args() == 0) {
+            return false;
+        }
+
+        _config.setDnsName(server.arg("dns_name"));
+        _config.setApEstablish(server.arg("dns_establish"));
+        _config.save();
+
+        response["success"] = true;
+        response["message"] = "DNS settings saved. Please restart the ESP.";
         return true;
     }
     return false;

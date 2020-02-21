@@ -18,6 +18,7 @@ class ONEBIOTCmdRequestHandler : public ONEBIOTRequestHandler {
         bool CMD_WIFI_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod);
         bool CMD_CREDENTIALS_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod);
         bool CMD_AP_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod);
+        bool CMD_DNS_CALLBACK(JsonDocument& response, ESP8266WebServer& server, HTTPMethod requestMethod);
         bool CMD_STATS_CALLBACK(JsonDocument& response);
         bool CMD_STATS_ESP_CALLBACK(JsonDocument& response);
         bool CMD_STATS_SPIFFS_CALLBACK(JsonDocument& response);
