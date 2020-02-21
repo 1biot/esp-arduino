@@ -1,6 +1,6 @@
 {
-  "name": "ONE Box of IOT Framework",
-  "description": "ONEBIOT is framework for creating base connection and behaviors settings for any app",
+  "name": "ONEBIOT",
+  "description": "ONE Box of IOT Framework for creating base connection and behaviors settings for any app",
   "keywords": "arduino, framework, wifi, manager, esp32, esp8266",
   "repository":
   {
