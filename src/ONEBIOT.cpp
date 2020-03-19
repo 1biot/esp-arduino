@@ -222,18 +222,18 @@ void ONEBIOTApp::addServeStatic(const char* uri) {
     }
 }
 
-void ONEBIOTApp::initializeTime(time_t &timestamp, int timezone, int daylightOffset_sec, const char* server1, const char* server2) {
+void ONEBIOTApp::initializeTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2) {
     configTime(timezone, daylightOffset_sec, server1, server2);
-    while (timestamp < INITIALIZE_TIMESTAMP) {
-        timestamp = time(nullptr);
+    while (_timestamp < INITIALIZE_TIMESTAMP) {
+        _timestamp = time(nullptr);
         delay(500);
     }
-    onInitializeTime(timestamp);
+    onInitializeTime(_timestamp);
 }
 
-time_t ONEBIOTApp::updateTime(time_t *timestamp) {
-    time(timestamp);
-    return *timestamp;
+time_t ONEBIOTApp::updateTime() {
+    time(&_timestamp);
+    return _timestamp;
 }
 
 void ONEBIOTApp::loop() {

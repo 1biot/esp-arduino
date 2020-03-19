@@ -115,7 +115,7 @@ bool ONEBIOTCmdRequestHandler::CMD_CREDENTIALS_CALLBACK(JsonDocument& response, 
         response["message"] = "User and password are empty. Operation is not allowed.";
     } else {
         bool changedUser = _config.setCredentialsUser(server.arg("credentials_user"));
-        bool changedPassword = _config.setCredentialsUser(server.arg("credentials_password"));
+        bool changedPassword = _config.setCredentialsPassword(server.arg("credentials_password"));
         if (changedUser || changedPassword) {
             _config.save();
         }

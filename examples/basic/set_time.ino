@@ -18,9 +18,9 @@ void onInitializeTime(time_t timestamp) {
 
 void updateTime() {
     struct tm * timeinfo;
-    obiApp.updateTime(&timestamp);
-    
+    timestamp = obiApp.updateTime();
     timeinfo = localtime(&timestamp);
+
     int year = timeinfo->tm_year + 1900;
     int month = timeinfo->tm_mon;
     int day = timeinfo->tm_mday;

@@ -28,6 +28,7 @@ class ONEBIOTApp {
         bool _establishMDNS = false;
         bool _establishWebServer = false;
         bool _updateTime = false;
+        time_t _timestamp;
     public:
         ONEBIOTApp(ONEBIOTConfig &config);
         ONEBIOTConfig getConfig();
@@ -46,8 +47,8 @@ class ONEBIOTApp {
         bool startMDNS(String hostName);
         void addRequestHandler(ONEBIOTRequestHandler *handler);
         void addServeStatic(const char* uri);
-        void initializeTime(time_t &timestamp, int timezone, int daylightOffset_sec, const char* server1, const char* server2);
-        time_t updateTime(time_t *timestamp);
+        void initializeTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2);
+        time_t updateTime();
         void loop();
         bool isSpiffsStarted();
         bool isWifiStarted();

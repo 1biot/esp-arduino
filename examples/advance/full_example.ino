@@ -50,7 +50,7 @@ void testTaskCallBack() {
     digitalWrite(LED_BUILTIN, LOW);
 
     struct tm * timeinfo;
-    obiApp.updateTime(&timestamp);    
+    timestamp = obiApp.updateTime();
     timeinfo = localtime(&timestamp);
 
     int year = timeinfo->tm_year + 1900;
@@ -170,7 +170,7 @@ void onAPFailed (String message) {
 
 void onDNSBegin() {
     #ifdef DEBUG_SERIAL
-        Serial.println(String("[DNS] http://") + obiConfig.getConfig().dns_name + String(".local started"));
+        Serial.println(String("[DNS] http://") + obiConfig.getDnsName() + String(".local started"));
     #endif
 }
 
@@ -208,7 +208,7 @@ void setup() {
 
     obiApp.start(true);
     if (obiApp.isWifiStarted()) {
-        obiApp.initializeTime(timestamp, timezone * 3600, dst * 0, "cz.pool.ntp.org", "pool.ntp.org");
+        obiApp.initializeTime(timezone * 3600, dst * 0, "cz.pool.ntp.org", "pool.ntp.org");
         ts.addTask(testTask);
         testTask.enable();
     }
